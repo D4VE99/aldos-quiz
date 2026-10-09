@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ALDO's</title>
+<title>ALDO's — Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
 <style>
 *{box-sizing:border-box;margin:0}
@@ -14,6 +14,7 @@
   --coral:#e05252;--coral-soft:rgba(224,82,82,.12);
   --green:#3bb06a;--green-soft:rgba(59,176,106,.12);
   --gold:#d4a017;--gold-soft:rgba(212,160,23,.12);
+  --blue:#4a90d9;--blue-soft:rgba(74,144,217,.12);
   --opt-a:#e05252;--opt-b:#4a90d9;--opt-c:#e8a435;--opt-d:#7c6bc4;
   --radius:18px;--radius-sm:12px;
   --shadow:0 2px 12px rgba(58,46,31,.06);
@@ -27,6 +28,7 @@
     --coral:#f06b6b;--coral-soft:rgba(240,107,107,.15);
     --green:#56c884;--green-soft:rgba(86,200,132,.15);
     --gold:#eab835;--gold-soft:rgba(234,184,53,.15);
+    --blue:#5da0e8;--blue-soft:rgba(93,160,232,.15);
     --opt-a:#f06b6b;--opt-b:#5da0e8;--opt-c:#f0b54a;--opt-d:#9485d6;
     --shadow:0 2px 12px rgba(0,0,0,.2);
     color-scheme:dark;
@@ -39,6 +41,7 @@
   --coral:#f06b6b;--coral-soft:rgba(240,107,107,.15);
   --green:#56c884;--green-soft:rgba(86,200,132,.15);
   --gold:#eab835;--gold-soft:rgba(234,184,53,.15);
+  --blue:#5da0e8;--blue-soft:rgba(93,160,232,.15);
   --opt-a:#f06b6b;--opt-b:#5da0e8;--opt-c:#f0b54a;--opt-d:#9485d6;
   --shadow:0 2px 12px rgba(0,0,0,.2);
   color-scheme:dark;
@@ -51,18 +54,21 @@ body{
   padding:24px 16px;
 }
 h1,h2,h3{font-family:'Baloo 2',cursive}
-.app{width:100%;max-width:600px;display:flex;flex-direction:column;gap:18px}
+.app{width:100%;max-width:760px;display:flex;flex-direction:column;gap:18px}
 .logo{font-family:'Baloo 2',cursive;font-weight:800;font-size:2.6rem;text-align:center;color:var(--accent);line-height:1.1}
 .logo-sub{font-size:.8rem;color:var(--fg-dim);text-align:center;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:-2px}
 .card{background:var(--surface);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
 .card-header{font-family:'Baloo 2',cursive;font-weight:700;font-size:1.15rem;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:var(--accent-soft);color:var(--accent)}
-input{
+.badge-green{background:var(--green-soft);color:var(--green)}
+.badge-blue{background:var(--blue-soft);color:var(--blue)}
+.badge-coral{background:var(--coral-soft);color:var(--coral)}
+input,textarea{
   width:100%;padding:11px 14px;border-radius:var(--radius-sm);
   border:2px solid var(--surface-2);background:var(--bg);color:var(--fg);
   font-family:inherit;font-size:.95rem;outline:none;transition:border-color .15s;
 }
-input:focus{border-color:var(--accent)}
+input:focus,textarea:focus{border-color:var(--accent)}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;
   padding:11px 24px;border-radius:var(--radius-sm);border:none;
@@ -71,35 +77,46 @@ input:focus{border-color:var(--accent)}
 }
 .btn:active{transform:scale(.96)}
 .btn-primary{background:var(--accent)}
-.btn-green{background:var(--green)}
 .btn-coral{background:var(--coral)}
+.btn-green{background:var(--green)}
+.btn-ghost{background:transparent;border:2px solid var(--surface-2);color:var(--fg-dim)}
 .btn-sm{padding:7px 14px;font-size:.85rem}
 .btn:disabled{opacity:.4;cursor:default}
-.question-display{text-align:center;padding:28px 20px}
-.q-counter{font-family:'Baloo 2',cursive;font-weight:700;font-size:.9rem;color:var(--accent);margin-bottom:6px}
-.q-main-text{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.8rem;line-height:1.3;text-wrap:balance}
-@media(max-width:500px){.q-main-text{font-size:1.3rem}}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.options-grid{grid-template-columns:1fr}}
+.option-input-row{display:flex;align-items:center;gap:8px}
+.option-input-row input[type="text"]{flex:1;min-width:0}
+.option-label{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-family:'Baloo 2',cursive;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}
+.correct-radio{width:20px;height:20px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+.q-item{background:var(--surface-2);border-radius:var(--radius-sm);padding:14px;display:flex;align-items:flex-start;gap:12px}
+.q-num{font-family:'Baloo 2',cursive;font-weight:800;font-size:.85rem;color:var(--accent);min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);border-radius:8px;flex-shrink:0}
+.q-body{flex:1;min-width:0}
+.q-text{font-weight:700;margin-bottom:6px;word-break:break-word}
+.q-opts{display:flex;flex-wrap:wrap;gap:4px}
+.q-opt{font-size:.8rem;padding:2px 8px;border-radius:6px;background:var(--bg);white-space:nowrap}
+.q-opt.correct{background:var(--green-soft);color:var(--green);font-weight:700}
+.icon-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:none;background:var(--bg);color:var(--fg-dim);cursor:pointer;font-size:1rem}
+.icon-btn:hover{color:var(--coral)}
 .answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
 @media(max-width:500px){.answer-grid{grid-template-columns:1fr}}
 .answer-btn{
   padding:18px;border-radius:var(--radius);border:3px solid transparent;
   font-family:'Baloo 2',cursive;font-weight:700;font-size:1.1rem;
-  color:#fff;text-align:left;display:flex;align-items:center;gap:10px;
-  cursor:pointer;transition:transform .1s,border-color .2s;position:relative;
+  color:#fff;text-align:left;display:flex;align-items:center;gap:10px;position:relative;
 }
-.answer-btn:active{transform:scale(.96)}
 .answer-btn .lbl{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.answer-btn .count-badge{position:absolute;top:8px;right:10px;background:rgba(255,255,255,.3);padding:2px 8px;border-radius:10px;font-size:.75rem}
 .answer-btn:nth-child(1){background:var(--opt-a)}
 .answer-btn:nth-child(2){background:var(--opt-b)}
 .answer-btn:nth-child(3){background:var(--opt-c)}
 .answer-btn:nth-child(4){background:var(--opt-d)}
-.answer-btn.selected{border-color:#fff;box-shadow:0 0 16px rgba(255,255,255,.3)}
 .answer-btn.correct-reveal{border-color:var(--green);box-shadow:0 0 20px rgba(59,176,106,.3)}
 .answer-btn.wrong-reveal{opacity:.35}
-.answer-btn.my-wrong{border-color:var(--coral);opacity:.7}
-.answer-btn.disabled{pointer-events:none;opacity:.7}
-.correct-banner{text-align:center;padding:14px;border-radius:var(--radius);background:var(--green-soft);color:var(--green);font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem}
-.wrong-banner{text-align:center;padding:14px;border-radius:var(--radius);background:var(--coral-soft);color:var(--coral);font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem}
+.question-display{text-align:center;padding:28px 20px}
+.q-counter{font-family:'Baloo 2',cursive;font-weight:700;font-size:.9rem;color:var(--accent);margin-bottom:6px}
+.q-main-text{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.8rem;line-height:1.3;text-wrap:balance}
+@media(max-width:500px){.q-main-text{font-size:1.3rem}}
 .lb-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius-sm);background:var(--surface-2)}
 .lb-row:nth-child(1){background:var(--gold-soft)}
 .lb-rank{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.15rem;min-width:34px;text-align:center}
@@ -107,20 +124,19 @@ input:focus{border-color:var(--accent)}
 .lb-row:nth-child(2) .lb-rank{color:var(--fg-dim)}
 .lb-row:nth-child(3) .lb-rank{color:var(--coral)}
 .lb-name{flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lb-name.me{color:var(--accent)}
 .lb-score{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.15rem;color:var(--accent);font-variant-numeric:tabular-nums}
 .lb-list{display:flex;flex-direction:column;gap:8px}
-.waiting-box{text-align:center;padding:40px 20px}
-.waiting-box .emoji{font-size:3rem;margin-bottom:12px}
-.waiting-box h2{margin-bottom:8px}
-.waiting-box p{color:var(--fg-dim)}
+.team-list{display:flex;flex-wrap:wrap;gap:8px}
+.team-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;background:var(--surface-2);font-weight:700;font-size:.9rem}
+.team-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.qr-box{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px}
+.qr-box canvas{border-radius:var(--radius-sm);background:#fff;padding:12px}
+.qr-link{font-size:.85rem;color:var(--fg-dim);word-break:break-all;text-align:center;max-width:100%}
+.correct-banner{text-align:center;padding:14px;border-radius:var(--radius);background:var(--green-soft);color:var(--green);font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem}
 .status-msg{text-align:center;padding:24px;color:var(--fg-dim);font-weight:700}
+.divider{height:1px;background:var(--surface-2);margin-block:4px}
 .fade-in{animation:fadeIn .4s ease-out}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.pulse{animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.error-card{background:var(--coral-soft);border:2px solid var(--coral);border-radius:var(--radius);padding:22px;text-align:center}
-.error-card h3{color:var(--coral);font-family:'Baloo 2',cursive;margin-bottom:8px}
 .conn-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:700}
 .conn-bar .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .conn-bar.online{background:var(--green-soft);color:var(--green)}
@@ -130,14 +146,14 @@ input:focus{border-color:var(--accent)}
 .conn-bar.error{background:var(--coral-soft);color:var(--coral)}
 .conn-bar.error .dot{background:var(--coral)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.debug-log{font-size:.75rem;color:var(--fg-dim);background:var(--surface-2);border-radius:var(--radius-sm);padding:12px;max-height:100px;overflow-y:auto;font-family:monospace;line-height:1.6;word-break:break-all}
+.debug-log{font-size:.75rem;color:var(--fg-dim);background:var(--surface-2);border-radius:var(--radius-sm);padding:12px;max-height:120px;overflow-y:auto;font-family:monospace;line-height:1.6;word-break:break-all}
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <div>
     <div class="logo">ALDO's</div>
-    <div class="logo-sub">quiz time</div>
+    <div class="logo-sub">admin panel</div>
   </div>
   <div id="conn-status"></div>
   <div id="main"></div>
@@ -145,9 +161,11 @@ input:focus{border-color:var(--accent)}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 (function(){
   const OPT_LABELS = ['A','B','C','D'];
+  const OPT_COLORS = ['var(--opt-a)','var(--opt-b)','var(--opt-c)','var(--opt-d)'];
   const main = document.getElementById('main');
   const connEl = document.getElementById('conn-status');
   const debugBox = document.getElementById('debug-box');
@@ -157,57 +175,161 @@ input:focus{border-color:var(--accent)}
   function log(msg){
     const t = new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     logs.push(t+' '+msg);
-    if(logs.length>20) logs.shift();
+    if(logs.length>30) logs.shift();
     debugBox.innerHTML='<div class="debug-log">'+logs.join('<br>')+'</div>';
-    console.log('[ALDO player]',msg);
+    console.log('[ALDO admin]',msg);
   }
 
+  // ── PeerJS ──
   let peer = null;
-  let conn = null;
+  let connections = {};
   let roomCode = '';
-  let playerName = '';
-  let joined = false;
-  let myAnswer = null;
-  let prevQuestionIndex = -1;
-  let connState = 'idle'; // idle, connecting, open, error, closed
+  let peerReady = false;
+  let peerError = '';
+  let retryCount = 0;
+  const MAX_RETRIES = 3;
 
-  let gameState = {
-    questions: [],
-    phase: 'lobby',
-    currentIndex: 0,
-    scores: {},
-    teams: {}
-  };
+  // ── Game state ──
+  let questions = [];
+  let phase = 'setup';
+  let currentIndex = 0;
+  let teams = {};
+  let responses = {};
+  let scores = {};
 
   function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
   const rankIcon = i => i===0?'&#127942;':i===1?'&#129352;':i===2?'&#129353;':(i+1);
 
-  function getRoomFromUrl(){
-    const params = new URLSearchParams(window.location.search);
-    return (params.get('room') || '').trim().toUpperCase();
+  function generateRoomCode(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'ALDO';
+    for(let i=0;i<4;i++) code += chars[Math.floor(Math.random()*chars.length)];
+    return code;
   }
 
+  function getPlayerLink(){
+    return 'https://d4ve99.github.io/aldos-quiz/';
+  }
+
+  // ── LocalStorage: salva/carica domande ──
+  function saveQuestions(){
+    try{ localStorage.setItem('aldo_questions', JSON.stringify(questions)); }catch(e){}
+  }
+  function loadQuestions(){
+    try{
+      const saved = localStorage.getItem('aldo_questions');
+      if(saved){ questions = JSON.parse(saved); }
+    }catch(e){}
+  }
+
+  // ── Connection status bar ──
   function updateConnStatus(){
-    if(connState === 'idle'){
+    if(phase === 'setup'){
       connEl.innerHTML = '';
-    } else if(connState === 'connecting'){
-      connEl.innerHTML = '<div class="conn-bar connecting"><span class="dot"></span>Connessione in corso...</div>';
-    } else if(connState === 'open'){
-      connEl.innerHTML = `<div class="conn-bar online"><span class="dot"></span>Connesso alla stanza ${esc(roomCode)}</div>`;
-    } else if(connState === 'error' || connState === 'closed'){
-      connEl.innerHTML = '';
+      return;
+    }
+    if(peerError){
+      connEl.innerHTML = `<div class="conn-bar error"><span class="dot"></span>${esc(peerError)} <button class="btn btn-sm btn-coral" style="margin-left:auto" onclick="retryPeer()">Riprova</button></div>`;
+    } else if(!peerReady){
+      connEl.innerHTML = '<div class="conn-bar connecting"><span class="dot"></span>Connessione al server...</div>';
+    } else {
+      const n = Object.values(connections).filter(c=>c.conn&&c.conn.open).length;
+      connEl.innerHTML = `<div class="conn-bar online"><span class="dot"></span>Online &mdash; Stanza: ${esc(roomCode)} &mdash; ${n} connessi</div>`;
     }
   }
 
-  // ── Connect to admin ──
-  function connectToRoom(code){
-    roomCode = code;
-    connState = 'connecting';
-    updateConnStatus();
-    log('Connessione alla stanza: '+code);
+  // ── Broadcast to all players ──
+  function broadcast(msg){
+    let sent = 0;
+    Object.values(connections).forEach(c => {
+      try{
+        if(c.conn && c.conn.open){
+          c.conn.send(msg);
+          sent++;
+        }
+      }catch(e){ log('Errore invio: '+e.message); }
+    });
+    log('Broadcast a '+sent+' giocatori: '+msg.type);
+  }
 
-    try{
-      peer = new Peer(undefined, {
+  function broadcastState(){
+    const qs = questions.map(q => ({
+      text: q.text,
+      options: q.options,
+      correct: (phase === 'revealed' || phase === 'finished') ? q.correct : -1
+    }));
+    broadcast({
+      type: 'state',
+      phase,
+      currentIndex,
+      questions: qs,
+      scores,
+      teams
+    });
+  }
+
+  // ── Handle incoming player connection ──
+  function handleConnection(conn){
+    log('Nuova connessione da: '+conn.peer);
+
+    conn.on('open', () => {
+      log('Connessione aperta: '+conn.peer);
+      connections[conn.peer] = { conn, name: '' };
+      updateConnStatus();
+      setTimeout(() => broadcastState(), 200);
+    });
+
+    conn.on('data', (data) => {
+      if(!data || !data.type) return;
+
+      if(data.type === 'join'){
+        const name = String(data.name || '').slice(0,30);
+        log('Giocatore connesso: '+name);
+        connections[conn.peer] = { conn, name };
+        teams[conn.peer] = name;
+        if(!scores[conn.peer]) scores[conn.peer] = { name, score: 0 };
+        scores[conn.peer].name = name;
+        broadcastState();
+        render();
+      }
+
+      if(data.type === 'answer' && phase === 'question'){
+        if(responses[conn.peer] !== undefined) return;
+        if(typeof data.answer !== 'number') return;
+        responses[conn.peer] = data.answer;
+        const pName = teams[conn.peer]||conn.peer;
+        log(pName+' ha risposto: '+OPT_LABELS[data.answer]);
+        try{ conn.send({ type: 'answer-ack', answer: data.answer }); }catch(e){}
+        render();
+      }
+    });
+
+    conn.on('close', () => {
+      log('Disconnesso: '+(teams[conn.peer]||conn.peer));
+      if(connections[conn.peer]) connections[conn.peer].conn = null;
+      updateConnStatus();
+      render();
+    });
+
+    conn.on('error', (err) => {
+      log('Errore connessione player: '+err);
+    });
+  }
+
+  // ── Start PeerJS ──
+  function startPeer(){
+    if(peer){
+      try{ peer.destroy(); }catch(e){}
+      peer = null;
+    }
+    peerReady = false;
+    peerError = '';
+    roomCode = generateRoomCode();
+    log('Avvio PeerJS con ID: '+roomCode);
+    updateConnStatus();
+
+    try {
+      peer = new Peer(roomCode, {
         debug: 1,
         config: {
           iceServers: [
@@ -216,316 +338,252 @@ input:focus{border-color:var(--accent)}
           ]
         }
       });
-    }catch(e){
+    } catch(e){
       log('Errore creazione Peer: '+e.message);
-      connState = 'error';
-      renderError('Errore PeerJS: '+e.message);
+      peerError = 'Errore PeerJS: '+e.message;
+      updateConnStatus();
       return;
     }
 
-    peer.on('open', (myId) => {
-      log('Peer pronto, mio ID: '+myId);
-      log('Connessione a: '+roomCode);
+    peer.on('open', (id) => {
+      roomCode = id;
+      peerReady = true;
+      peerError = '';
+      retryCount = 0;
+      log('PeerJS pronto! ID: '+id);
+      updateConnStatus();
+      render();
+    });
 
-      try{
-        conn = peer.connect(roomCode, { reliable: true, serialization: 'json' });
-      }catch(e){
-        log('Errore connect: '+e.message);
-        connState = 'error';
-        renderError('Impossibile connettersi alla stanza.');
-        return;
+    peer.on('connection', handleConnection);
+
+    peer.on('disconnected', () => {
+      log('PeerJS disconnesso dal server, riconnessione...');
+      peerReady = false;
+      updateConnStatus();
+      try{ peer.reconnect(); }catch(e){
+        log('Riconnessione fallita: '+e.message);
       }
-
-      conn.on('open', () => {
-        log('Connessione aperta con admin!');
-        connState = 'open';
-        updateConnStatus();
-        render();
-      });
-
-      conn.on('data', (data) => {
-        if(!data) return;
-
-        if(data.type === 'state'){
-          if(data.currentIndex !== prevQuestionIndex){
-            myAnswer = null;
-            prevQuestionIndex = data.currentIndex;
-          }
-          gameState = {
-            questions: data.questions || [],
-            phase: data.phase || 'lobby',
-            currentIndex: data.currentIndex || 0,
-            scores: data.scores || {},
-            teams: data.teams || {}
-          };
-          log('Stato ricevuto: '+data.phase+' (domanda '+(data.currentIndex+1)+')');
-          render();
-        }
-
-        if(data.type === 'answer-ack'){
-          myAnswer = data.answer;
-          log('Risposta confermata: '+OPT_LABELS[data.answer]);
-          render();
-        }
-
-        if(data.type === 'reset'){
-          log('Quiz resettato dall\'host');
-          joined = false;
-          myAnswer = null;
-          prevQuestionIndex = -1;
-          gameState = { questions:[], phase:'lobby', currentIndex:0, scores:{}, teams:{} };
-          if(peer){ try{peer.destroy();}catch(e){} peer=null; }
-          conn = null;
-          connState = 'idle';
-          roomCode = '';
-          updateConnStatus();
-          render();
-        }
-      });
-
-      conn.on('close', () => {
-        log('Connessione chiusa');
-        connState = 'closed';
-        updateConnStatus();
-        renderDisconnected();
-      });
-
-      conn.on('error', (err) => {
-        log('Errore connessione: '+err);
-        connState = 'error';
-        updateConnStatus();
-      });
-
-      // Timeout: if data connection doesn't open in 10s
-      setTimeout(() => {
-        if(conn && !conn.open && connState === 'connecting'){
-          log('Timeout connessione dati (10s)');
-          connState = 'error';
-          renderError('Timeout. La stanza potrebbe non essere attiva.');
-        }
-      }, 10000);
     });
 
     peer.on('error', (err) => {
       log('Errore PeerJS: '+err.type+' - '+err.message);
-      connState = 'error';
-      updateConnStatus();
-      if(err.type === 'peer-unavailable'){
-        renderError('Stanza "'+code+'" non trovata. Controlla il codice e assicurati che l\'host sia online.');
-      } else if(err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error'){
-        renderError('Errore di rete. Verifica la connessione internet e riprova.');
-      } else {
-        renderError('Errore: '+err.type+'. '+err.message);
-      }
-    });
-
-    peer.on('disconnected', () => {
-      log('Peer disconnesso dal server segnalazione');
-      if(connState === 'open'){
-        // try reconnecting
-        try{ peer.reconnect(); }catch(e){
-          log('Riconnessione fallita');
+      if(err.type === 'unavailable-id'){
+        log('ID occupato, genero nuovo codice...');
+        try{ peer.destroy(); }catch(e){}
+        retryCount++;
+        if(retryCount < MAX_RETRIES){
+          setTimeout(startPeer, 500);
+        } else {
+          peerError = 'Impossibile creare la stanza dopo '+MAX_RETRIES+' tentativi.';
+          updateConnStatus();
         }
+      } else if(err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error' || err.type === 'socket-closed'){
+        peerError = 'Errore di rete. Verifica la connessione internet.';
+        peerReady = false;
+        updateConnStatus();
+      } else {
+        peerError = 'Errore: '+err.type;
+        updateConnStatus();
       }
     });
 
-    // Overall timeout for peer creation
+    // Timeout: if not connected in 15s
     setTimeout(() => {
-      if(connState === 'connecting'){
-        log('Timeout generale PeerJS (20s)');
-        connState = 'error';
-        renderError('Impossibile raggiungere il server. Il server PeerJS potrebbe essere temporaneamente non disponibile. Riprova tra qualche minuto.');
+      if(!peerReady && !peerError && phase !== 'setup'){
+        log('Timeout connessione PeerJS (15s)');
+        peerError = 'Timeout connessione. Il server PeerJS potrebbe essere lento.';
+        updateConnStatus();
       }
-    }, 20000);
+    }, 15000);
   }
+
+  window.retryPeer = function(){
+    peerError = '';
+    retryCount = 0;
+    startPeer();
+    render();
+  };
 
   // ── Render ──
   function render(){
     updateConnStatus();
-    if(connState === 'error' || connState === 'closed') return;
-    if(connState !== 'open'){
-      if(!roomCode) renderJoinCode();
-      else renderConnecting();
-      return;
-    }
-    if(!joined){
-      renderJoinName();
-      return;
-    }
-
-    const { phase } = gameState;
-    if(phase === 'lobby') renderWaiting();
-    else if(phase === 'question') renderQuestion();
-    else if(phase === 'revealed') renderRevealed();
-    else if(phase === 'finished') renderFinished();
-    else renderWaiting();
+    if(phase==='setup') renderSetup();
+    else if(phase==='lobby') renderLobby();
+    else if(phase==='question' || phase==='revealed') renderGame();
+    else if(phase==='finished') renderFinished();
   }
 
-  // ── Enter room code manually ──
-  function renderJoinCode(){
+  // ── SETUP ──
+  function renderSetup(){
+    const qList = questions.length===0
+      ? '<div class="status-msg" style="padding:12px">Nessuna domanda ancora. Aggiungine una!</div>'
+      : questions.map((q,i)=>`
+        <div class="q-item fade-in">
+          <div class="q-num">${i+1}</div>
+          <div class="q-body">
+            <div class="q-text">${esc(q.text)}</div>
+            <div class="q-opts">${q.options.map((o,j)=>`<span class="q-opt ${j===q.correct?'correct':''}">${OPT_LABELS[j]} ${esc(o)}</span>`).join('')}</div>
+          </div>
+          <div style="flex-shrink:0;margin-top:2px"><button class="icon-btn" onclick="removeQ(${i})">&times;</button></div>
+        </div>`).join('');
+
     main.innerHTML=`
-      <div class="card fade-in" style="text-align:center;padding:30px">
-        <div style="font-size:2.5rem;margin-bottom:8px">&#128270;</div>
-        <h2 style="margin-bottom:12px">Inserisci il codice stanza</h2>
-        <p style="color:var(--fg-dim);margin-bottom:16px;font-size:.9rem">Chiedi all'host il codice o scansiona il QR.</p>
-        <input type="text" id="room-input" placeholder="Es. ALDOXY7K" style="text-align:center;text-transform:uppercase;font-size:1.2rem;font-weight:700;letter-spacing:.1em;margin-bottom:14px" maxlength="10">
-        <button class="btn btn-primary" style="width:100%" onclick="manualJoin()">Connetti</button>
-      </div>`;
+      <div class="card">
+        <div class="card-header">Crea il tuo Quiz</div>
+        <p style="color:var(--fg-dim);font-size:.9rem;margin-bottom:16px">Aggiungi le domande e seleziona la risposta corretta.</p>
+        <div id="q-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">${qList}</div>
+        <div class="divider" style="margin-bottom:16px"></div>
+        <input type="text" id="q-text" placeholder="Scrivi la domanda..." style="margin-bottom:10px">
+        <div class="options-grid" style="margin-bottom:12px">
+          ${[0,1,2,3].map(i=>`
+            <div class="option-input-row">
+              <div class="option-label" style="background:${OPT_COLORS[i]}">${OPT_LABELS[i]}</div>
+              <input type="text" id="q-opt-${i}" placeholder="Opzione ${OPT_LABELS[i]}">
+              <input type="radio" name="correct" value="${i}" class="correct-radio" ${i===0?'checked':''}>
+            </div>`).join('')}
+        </div>
+        <button class="btn btn-primary" onclick="addQ()">+ Aggiungi Domanda</button>
+      </div>
+      <button class="btn btn-green" style="width:100%;font-size:1.1rem;padding:14px" onclick="startLobby()" ${questions.length===0?'disabled':''}>
+        Avanti: Apri la Lobby
+      </button>`;
+
     setTimeout(()=>{
-      const ri = document.getElementById('room-input');
-      if(ri){
-        ri.focus();
-        ri.addEventListener('keydown', e=>{ if(e.key==='Enter') manualJoin(); });
-      }
+      const qt = document.getElementById('q-text');
+      if(qt) qt.addEventListener('keydown', e=>{ if(e.key==='Enter') addQ(); });
     },30);
   }
 
-  function renderConnecting(){
-    main.innerHTML=`
-      <div class="card waiting-box fade-in">
-        <div class="emoji pulse">&#128268;</div>
-        <h2>Connessione in corso...</h2>
-        <p>Stanza: <strong>${esc(roomCode)}</strong></p>
-        <p style="font-size:.8rem;margin-top:12px;color:var(--fg-dim)">Potrebbe richiedere qualche secondo...</p>
-      </div>`;
-  }
-
-  function renderDisconnected(){
-    main.innerHTML=`
-      <div class="error-card fade-in">
-        <h3>&#128533; Connessione persa</h3>
-        <p style="margin-bottom:14px;color:var(--fg-dim)">L'host potrebbe aver chiuso la sessione.</p>
-        <button class="btn btn-primary" onclick="location.reload()">Riprova</button>
-      </div>`;
-  }
-
-  function renderError(msg){
-    main.innerHTML=`
-      <div class="error-card fade-in">
-        <h3>&#9888;&#65039; Oops!</h3>
-        <p style="margin-bottom:14px;color:var(--fg)">${esc(msg)}</p>
-        <button class="btn btn-primary" onclick="location.reload()">Riprova</button>
-      </div>`;
-  }
-
-  // ── Enter name ──
-  function renderJoinName(){
-    main.innerHTML=`
-      <div class="card fade-in" style="text-align:center;padding:30px">
-        <div style="font-size:2.5rem;margin-bottom:8px">&#127881;</div>
-        <h2 style="margin-bottom:4px">Unisciti al Quiz!</h2>
-        <p style="color:var(--fg-dim);margin-bottom:18px;font-size:.9rem">Stanza: <strong>${esc(roomCode)}</strong></p>
-        <input type="text" id="name-input" placeholder="Il tuo nome o squadra..." maxlength="30" style="text-align:center;font-size:1.1rem;margin-bottom:14px">
-        <button class="btn btn-green" style="width:100%;font-size:1.1rem;padding:14px" onclick="joinGame()">Entra!</button>
-      </div>`;
-    setTimeout(()=>{
-      const ni = document.getElementById('name-input');
-      if(ni){
-        ni.focus();
-        ni.addEventListener('keydown', e=>{ if(e.key==='Enter') joinGame(); });
-      }
-    },30);
-  }
-
-  // ── Waiting in lobby ──
-  function renderWaiting(){
-    main.innerHTML=`
-      <div class="card waiting-box fade-in">
-        <div class="emoji pulse">&#128075;</div>
-        <h2>Sei dentro!</h2>
-        <p>Aspetta che l'host avvii il quiz.</p>
-        <p style="margin-top:14px;font-weight:700;color:var(--accent)">${esc(playerName)}</p>
-      </div>`;
-  }
-
-  // ── Question ──
-  function renderQuestion(){
-    const q = gameState.questions[gameState.currentIndex];
-    if(!q) return renderWaiting();
-    const answered = myAnswer !== null;
+  // ── LOBBY ──
+  function renderLobby(){
+    const playerLink = getPlayerLink();
+    const teamList = Object.entries(teams);
+    const onlineCount = teamList.filter(([pid]) => connections[pid]?.conn?.open).length;
 
     main.innerHTML=`
-      <div class="card question-display fade-in">
-        <div class="q-counter">Domanda ${gameState.currentIndex+1} di ${gameState.questions.length}</div>
-        <div class="q-main-text">${esc(q.text)}</div>
-        <div class="answer-grid">
-          ${q.options.map((o,j)=>{
-            let cls = 'answer-btn';
-            if(answered && myAnswer===j) cls += ' selected';
-            if(answered && myAnswer!==j) cls += ' disabled';
-            return `<div class="${cls}" onclick="submitAnswer(${j})">
-              <span class="lbl">${OPT_LABELS[j]}</span>
-              <span style="flex:1;min-width:0">${esc(o)}</span>
-            </div>`;
-          }).join('')}
+      <div class="card qr-box fade-in">
+        <div class="card-header" style="margin-bottom:4px">Scansiona per unirti!</div>
+        ${peerReady?`
+          <div id="qr-container"></div>
+          <div class="qr-link">${esc(playerLink)}</div>
+          <div style="margin-top:12px;font-family:'Baloo 2',cursive;font-size:1.6rem;font-weight:800;letter-spacing:.15em;color:var(--accent)">${esc(roomCode)}</div>
+          <div style="font-size:.85rem;color:var(--fg-dim);font-weight:600">Comunica questo codice ai giocatori</div>
+        `:`
+          <div style="text-align:center;padding:20px;color:var(--fg-dim)">
+            <div style="font-size:2rem;margin-bottom:8px">&#9203;</div>
+            <p>Connessione al server in corso...</p>
+            <p style="font-size:.8rem;margin-top:8px">Il QR apparira' quando la connessione e' pronta.</p>
+          </div>
+        `}
+      </div>
+      <div class="card">
+        <div class="card-header">Giocatori connessi <span class="badge badge-green">${teamList.length}</span></div>
+        <div class="team-list">
+          ${teamList.length===0
+            ?'<div style="color:var(--fg-dim);font-size:.9rem">In attesa di giocatori...</div>'
+            :teamList.map(([pid,name])=>{
+              const online = connections[pid]?.conn?.open;
+              return `<div class="team-chip"><span class="dot" style="background:${online?'var(--green)':'var(--fg-dim)'}"></span>${esc(name)}</div>`;
+            }).join('')}
         </div>
       </div>
-      ${answered?`<div class="status-msg fade-in" style="padding:14px">&#10003; Risposta inviata!</div>`:''}`;
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="backToSetup()">Modifica Domande</button>
+        <button class="btn btn-green" style="flex:1" onclick="startQuestion(0)" ${teamList.length<1?'disabled':''}>
+          Inizia il Quiz!
+        </button>
+      </div>`;
+
+    if(peerReady){
+      setTimeout(()=>{
+        const container = document.getElementById('qr-container');
+        if(container && container.children.length===0){
+          try{
+            new QRCode(container, {
+              text: playerLink, width: 200, height: 200,
+              colorDark: '#3a2e1f', colorLight: '#ffffff',
+              correctLevel: QRCode.CorrectLevel.M
+            });
+            log('QR code generato');
+          }catch(e){
+            log('Errore QR: '+e.message);
+          }
+        }
+      },100);
+    }
   }
 
-  // ── Revealed ──
-  function renderRevealed(){
-    const q = gameState.questions[gameState.currentIndex];
+  // ── GAME ──
+  function renderGame(){
+    const q = questions[currentIndex];
     if(!q) return;
-    const correctIdx = q.correct;
-    const isCorrect = myAnswer === correctIdx;
-    const myId = peer?.id || '';
-    const myScore = gameState.scores[myId]?.score || 0;
+    const isRevealed = phase === 'revealed';
+    const totalTeams = Object.keys(teams).length;
 
-    const lb = Object.entries(gameState.scores)
-      .map(([id,s])=>({id, name:s.name, score:s.score||0}))
+    let responseCounts = [0,0,0,0];
+    let totalResponses = 0;
+    Object.values(responses).forEach(a=>{
+      if(typeof a === 'number'){ responseCounts[a]++; totalResponses++; }
+    });
+
+    const lb = Object.entries(scores)
+      .map(([id,s])=>({name:s.name, score:s.score||0}))
       .sort((a,b)=>b.score-a.score);
 
     main.innerHTML=`
       <div class="card question-display fade-in">
-        <div class="q-counter">Domanda ${gameState.currentIndex+1} di ${gameState.questions.length}</div>
+        <div class="q-counter">Domanda ${currentIndex+1} di ${questions.length}</div>
+        <div style="margin-bottom:6px"><span class="badge badge-blue">${totalResponses}/${totalTeams} risposte</span></div>
         <div class="q-main-text">${esc(q.text)}</div>
         <div class="answer-grid">
           ${q.options.map((o,j)=>{
             let cls='answer-btn';
-            if(j===correctIdx) cls+=' correct-reveal';
-            else if(myAnswer===j) cls+=' my-wrong';
-            else cls+=' wrong-reveal';
-            return `<div class="${cls}" style="pointer-events:none">
+            if(isRevealed && j===q.correct) cls+=' correct-reveal';
+            else if(isRevealed) cls+=' wrong-reveal';
+            return `<div class="${cls}">
               <span class="lbl">${OPT_LABELS[j]}</span>
               <span style="flex:1;min-width:0">${esc(o)}</span>
+              ${isRevealed?`<span class="count-badge">${responseCounts[j]}</span>`:''}
             </div>`;
           }).join('')}
         </div>
       </div>
-      ${myAnswer!==null
-        ?(isCorrect
-          ?`<div class="correct-banner fade-in">&#127881; Esatto! +1 punto</div>`
-          :`<div class="wrong-banner fade-in">&#128532; La risposta era ${OPT_LABELS[correctIdx]}</div>`)
-        :`<div class="wrong-banner fade-in">Non hai risposto in tempo!</div>`}
-      <div class="card fade-in">
-        <div class="card-header">Classifica <span class="badge">Tu: ${myScore} pt</span></div>
-        <div class="lb-list">
-          ${lb.map((e,i)=>`
-            <div class="lb-row">
-              <div class="lb-rank">${rankIcon(i)}</div>
-              <div class="lb-name ${e.id===myId?'me':''}">${esc(e.name)}${e.id===myId?' (tu)':''}</div>
-              <div class="lb-score">${e.score}</div>
-            </div>`).join('')}
+      ${isRevealed?`
+        <div class="correct-banner fade-in">Risposta corretta: ${OPT_LABELS[q.correct]} &mdash; ${esc(q.options[q.correct])}</div>
+        ${lb.length>0?`
+        <div class="card fade-in">
+          <div class="card-header">Classifica</div>
+          <div class="lb-list">
+            ${lb.map((e,i)=>`
+              <div class="lb-row">
+                <div class="lb-rank">${rankIcon(i)}</div>
+                <div class="lb-name">${esc(e.name)}</div>
+                <div class="lb-score">${e.score}</div>
+              </div>`).join('')}
+          </div>
+        </div>`:''}
+        <div class="btn-row">
+          ${currentIndex<questions.length-1
+            ?`<button class="btn btn-primary" style="flex:1" onclick="startQuestion(${currentIndex+1})">Prossima Domanda</button>`
+            :`<button class="btn btn-green" style="flex:1" onclick="finishGame()">Termina Quiz</button>`}
         </div>
-      </div>`;
+      `:`
+        <button class="btn btn-coral" style="width:100%;font-size:1.05rem;padding:14px" onclick="revealAnswer()">Rivela Risposta</button>
+      `}`;
   }
 
-  // ── Finished ──
+  // ── FINISHED ──
   function renderFinished(){
-    const myId = peer?.id || '';
-    const lb = Object.entries(gameState.scores)
-      .map(([id,s])=>({id, name:s.name, score:s.score||0}))
+    const lb = Object.entries(scores)
+      .map(([id,s])=>({name:s.name, score:s.score||0}))
       .sort((a,b)=>b.score-a.score);
-    const myRank = lb.findIndex(e=>e.id===myId)+1;
-    const myScore = gameState.scores[myId]?.score||0;
 
     main.innerHTML=`
       <div class="card fade-in" style="text-align:center;padding:36px">
         <div style="font-size:3rem;margin-bottom:8px">&#127942;</div>
         <h2 style="font-size:1.7rem;margin-bottom:6px">Quiz Terminato!</h2>
-        ${lb.length>0?`<p style="color:var(--accent);font-size:1.2rem;font-weight:700">${esc(lb[0].name)} vince!</p>`:''}
-        <p style="color:var(--fg-dim);margin-top:8px">Il tuo punteggio: <strong>${myScore}</strong> &mdash; Posizione: <strong>${myRank}&deg;</strong></p>
+        ${lb.length>0?`<p style="color:var(--accent);font-size:1.2rem;font-weight:700">${esc(lb[0].name)} vince con ${lb[0].score} punti!</p>`:''}
       </div>
       <div class="card">
         <div class="card-header">Classifica Finale</div>
@@ -533,55 +591,119 @@ input:focus{border-color:var(--accent)}
           ${lb.map((e,i)=>`
             <div class="lb-row fade-in" style="animation-delay:${i*0.06}s">
               <div class="lb-rank">${rankIcon(i)}</div>
-              <div class="lb-name ${e.id===myId?'me':''}">${esc(e.name)}${e.id===myId?' (tu)':''}</div>
+              <div class="lb-name">${esc(e.name)}</div>
               <div class="lb-score">${e.score}</div>
             </div>`).join('')}
         </div>
-      </div>`;
+      </div>
+      <button class="btn btn-ghost" style="width:100%" onclick="resetAll()">Nuovo Quiz</button>`;
   }
 
   // ── Actions ──
-  window.manualJoin = function(){
-    const code = document.getElementById('room-input')?.value?.trim()?.toUpperCase();
-    if(!code) return;
-    log('Join manuale: '+code);
-    connectToRoom(code);
+  window.addQ = function(){
+    const text = document.getElementById('q-text')?.value?.trim();
+    const opts = [0,1,2,3].map(i=>document.getElementById('q-opt-'+i)?.value?.trim());
+    const ce = document.querySelector('input[name="correct"]:checked');
+    const correct = ce ? parseInt(ce.value) : 0;
+    if(!text){document.getElementById('q-text')?.focus();return;}
+    if(opts.some(o=>!o)) return;
+    questions.push({text,options:opts,correct});
+    saveQuestions();
+    render();
+    setTimeout(()=>{
+      document.getElementById('q-text').value='';
+      [0,1,2,3].forEach(i=>document.getElementById('q-opt-'+i).value='');
+      document.querySelector('input[name="correct"][value="0"]').checked=true;
+      document.getElementById('q-text').focus();
+    },20);
   };
 
-  window.joinGame = function(){
-    const name = document.getElementById('name-input')?.value?.trim();
-    if(!name) return;
-    playerName = name;
-    joined = true;
-    log('Entrato come: '+name);
-    try{
-      conn.send({ type: 'join', name: playerName });
-    }catch(e){
-      log('Errore invio join: '+e.message);
-    }
+  window.removeQ = function(i){ questions.splice(i,1); saveQuestions(); render(); };
+
+  window.startLobby = function(){
+    if(questions.length===0) return;
+    phase = 'lobby';
+    teams = {};
+    responses = {};
+    scores = {};
+    connections = {};
+    log('Avvio lobby...');
+    startPeer();
     render();
   };
 
-  window.submitAnswer = function(idx){
-    if(myAnswer !== null) return;
-    myAnswer = idx;
-    log('Risposta: '+OPT_LABELS[idx]);
-    try{
-      conn.send({ type: 'answer', answer: idx });
-    }catch(e){
-      log('Errore invio risposta: '+e.message);
-    }
+  window.backToSetup = function(){
+    phase = 'setup';
+    peerReady = false;
+    peerError = '';
+    if(peer){ try{peer.destroy();}catch(e){} peer=null; }
+    connections = {};
+    teams = {};
+    responses = {};
+    scores = {};
+    logs = [];
+    debugBox.innerHTML = '';
+    render();
+  };
+
+  window.startQuestion = function(idx){
+    currentIndex = idx;
+    phase = 'question';
+    responses = {};
+    log('Domanda '+(idx+1)+' iniziata');
+    broadcastState();
+    render();
+  };
+
+  window.revealAnswer = function(){
+    phase = 'revealed';
+    const q = questions[currentIndex];
+
+    Object.entries(responses).forEach(([pid, answer]) => {
+      if(!scores[pid]) scores[pid] = { name: teams[pid]||'???', score: 0 };
+      scores[pid].name = teams[pid] || scores[pid].name;
+      if(answer === q.correct){
+        scores[pid].score = (scores[pid].score||0) + 1;
+      }
+    });
+    Object.entries(teams).forEach(([pid, name]) => {
+      if(!scores[pid]) scores[pid] = { name, score: 0 };
+    });
+
+    log('Risposta rivelata: '+OPT_LABELS[q.correct]);
+    broadcastState();
+    render();
+  };
+
+  window.finishGame = function(){
+    phase = 'finished';
+    log('Quiz terminato');
+    broadcastState();
+    render();
+  };
+
+  window.resetAll = function(){
+    broadcast({ type: 'reset' });
+    if(peer){ try{peer.destroy();}catch(e){} peer=null; }
+    questions = [];
+    saveQuestions();
+    phase = 'setup';
+    currentIndex = 0;
+    connections = {};
+    teams = {};
+    responses = {};
+    scores = {};
+    roomCode = '';
+    peerReady = false;
+    peerError = '';
+    logs = [];
+    debugBox.innerHTML = '';
     render();
   };
 
   // ── Init ──
-  roomCode = getRoomFromUrl();
-  if(roomCode){
-    log('Codice stanza da URL: '+roomCode);
-    connectToRoom(roomCode);
-  } else {
-    render();
-  }
+  loadQuestions();
+  render();
 })();
 </script>
 </body>
