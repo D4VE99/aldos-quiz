@@ -208,9 +208,18 @@ input:focus,textarea:focus{border-color:var(--accent)}
   }
 
   function getPlayerLink(){
-    const loc = window.location;
-    const base = loc.protocol + '//' + loc.host + loc.pathname.replace(/\/admin\.html.*/, '').replace(/\/$/,'');
-    return base + '/index.html?room=' + roomCode;
+    return 'https://d4ve99.github.io/aldos-quiz/';
+  }
+
+  // ── LocalStorage: salva/carica domande ──
+  function saveQuestions(){
+    try{ localStorage.setItem('aldo_questions', JSON.stringify(questions)); }catch(e){}
+  }
+  function loadQuestions(){
+    try{
+      const saved = localStorage.getItem('aldo_questions');
+      if(saved){ questions = JSON.parse(saved); }
+    }catch(e){}
   }
 
   // ── Connection status bar ──
@@ -458,9 +467,8 @@ input:focus,textarea:focus{border-color:var(--accent)}
         ${peerReady?`
           <div id="qr-container"></div>
           <div class="qr-link">${esc(playerLink)}</div>
-          <div style="margin-top:4px">
-            <span class="badge" style="font-size:.85rem;letter-spacing:.05em">Stanza: ${esc(roomCode)}</span>
-          </div>
+          <div style="margin-top:12px;font-family:'Baloo 2',cursive;font-size:1.6rem;font-weight:800;letter-spacing:.15em;color:var(--accent)">${esc(roomCode)}</div>
+          <div style="font-size:.85rem;color:var(--fg-dim);font-weight:600">Comunica questo codice ai giocatori</div>
         `:`
           <div style="text-align:center;padding:20px;color:var(--fg-dim)">
             <div style="font-size:2rem;margin-bottom:8px">&#9203;</div>
@@ -600,6 +608,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
     if(!text){document.getElementById('q-text')?.focus();return;}
     if(opts.some(o=>!o)) return;
     questions.push({text,options:opts,correct});
+    saveQuestions();
     render();
     setTimeout(()=>{
       document.getElementById('q-text').value='';
@@ -609,7 +618,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
     },20);
   };
 
-  window.removeQ = function(i){ questions.splice(i,1); render(); };
+  window.removeQ = function(i){ questions.splice(i,1); saveQuestions(); render(); };
 
   window.startLobby = function(){
     if(questions.length===0) return;
@@ -677,6 +686,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
     broadcast({ type: 'reset' });
     if(peer){ try{peer.destroy();}catch(e){} peer=null; }
     questions = [];
+    saveQuestions();
     phase = 'setup';
     currentIndex = 0;
     connections = {};
@@ -692,6 +702,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
   };
 
   // ── Init ──
+  loadQuestions();
   render();
 })();
 </script>
