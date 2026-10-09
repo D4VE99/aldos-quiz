@@ -72,6 +72,8 @@ input:focus{border-color:var(--accent)}
 .btn:active{transform:scale(.96)}
 .btn-primary{background:var(--accent)}
 .btn-green{background:var(--green)}
+.btn-coral{background:var(--coral)}
+.btn-sm{padding:7px 14px;font-size:.85rem}
 .btn:disabled{opacity:.4;cursor:default}
 .question-display{text-align:center;padding:28px 20px}
 .q-counter{font-family:'Baloo 2',cursive;font-weight:700;font-size:.9rem;color:var(--accent);margin-bottom:6px}
@@ -119,6 +121,16 @@ input:focus{border-color:var(--accent)}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 .error-card{background:var(--coral-soft);border:2px solid var(--coral);border-radius:var(--radius);padding:22px;text-align:center}
 .error-card h3{color:var(--coral);font-family:'Baloo 2',cursive;margin-bottom:8px}
+.conn-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:700}
+.conn-bar .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.conn-bar.online{background:var(--green-soft);color:var(--green)}
+.conn-bar.online .dot{background:var(--green)}
+.conn-bar.connecting{background:var(--gold-soft);color:var(--gold)}
+.conn-bar.connecting .dot{background:var(--gold);animation:blink 1s infinite}
+.conn-bar.error{background:var(--coral-soft);color:var(--coral)}
+.conn-bar.error .dot{background:var(--coral)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.debug-log{font-size:.75rem;color:var(--fg-dim);background:var(--surface-2);border-radius:var(--radius-sm);padding:12px;max-height:100px;overflow-y:auto;font-family:monospace;line-height:1.6;word-break:break-all}
 </style>
 </head>
 <body>
@@ -127,7 +139,9 @@ input:focus{border-color:var(--accent)}
     <div class="logo">ALDO's</div>
     <div class="logo-sub">quiz time</div>
   </div>
+  <div id="conn-status"></div>
   <div id="main"></div>
+  <div id="debug-box" style="margin-top:12px"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
@@ -135,6 +149,18 @@ input:focus{border-color:var(--accent)}
 (function(){
   const OPT_LABELS = ['A','B','C','D'];
   const main = document.getElementById('main');
+  const connEl = document.getElementById('conn-status');
+  const debugBox = document.getElementById('debug-box');
+
+  // ── Debug log ──
+  let logs = [];
+  function log(msg){
+    const t = new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    logs.push(t+' '+msg);
+    if(logs.length>20) logs.shift();
+    debugBox.innerHTML='<div class="debug-log">'+logs.join('<br>')+'</div>';
+    console.log('[ALDO player]',msg);
+  }
 
   let peer = null;
   let conn = null;
@@ -143,6 +169,7 @@ input:focus{border-color:var(--accent)}
   let joined = false;
   let myAnswer = null;
   let prevQuestionIndex = -1;
+  let connState = 'idle'; // idle, connecting, open, error, closed
 
   let gameState = {
     questions: [],
@@ -157,18 +184,62 @@ input:focus{border-color:var(--accent)}
 
   function getRoomFromUrl(){
     const params = new URLSearchParams(window.location.search);
-    return params.get('room') || '';
+    return (params.get('room') || '').trim().toUpperCase();
+  }
+
+  function updateConnStatus(){
+    if(connState === 'idle'){
+      connEl.innerHTML = '';
+    } else if(connState === 'connecting'){
+      connEl.innerHTML = '<div class="conn-bar connecting"><span class="dot"></span>Connessione in corso...</div>';
+    } else if(connState === 'open'){
+      connEl.innerHTML = `<div class="conn-bar online"><span class="dot"></span>Connesso alla stanza ${esc(roomCode)}</div>`;
+    } else if(connState === 'error' || connState === 'closed'){
+      connEl.innerHTML = '';
+    }
   }
 
   // ── Connect to admin ──
   function connectToRoom(code){
     roomCode = code;
-    peer = new Peer(undefined, { debug: 0 });
+    connState = 'connecting';
+    updateConnStatus();
+    log('Connessione alla stanza: '+code);
 
-    peer.on('open', () => {
-      conn = peer.connect(roomCode, { reliable: true });
+    try{
+      peer = new Peer(undefined, {
+        debug: 1,
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+          ]
+        }
+      });
+    }catch(e){
+      log('Errore creazione Peer: '+e.message);
+      connState = 'error';
+      renderError('Errore PeerJS: '+e.message);
+      return;
+    }
+
+    peer.on('open', (myId) => {
+      log('Peer pronto, mio ID: '+myId);
+      log('Connessione a: '+roomCode);
+
+      try{
+        conn = peer.connect(roomCode, { reliable: true, serialization: 'json' });
+      }catch(e){
+        log('Errore connect: '+e.message);
+        connState = 'error';
+        renderError('Impossibile connettersi alla stanza.');
+        return;
+      }
 
       conn.on('open', () => {
+        log('Connessione aperta con admin!');
+        connState = 'open';
+        updateConnStatus();
         render();
       });
 
@@ -176,7 +247,6 @@ input:focus{border-color:var(--accent)}
         if(!data) return;
 
         if(data.type === 'state'){
-          // Track question changes to reset answer
           if(data.currentIndex !== prevQuestionIndex){
             myAnswer = null;
             prevQuestionIndex = data.currentIndex;
@@ -188,46 +258,92 @@ input:focus{border-color:var(--accent)}
             scores: data.scores || {},
             teams: data.teams || {}
           };
+          log('Stato ricevuto: '+data.phase+' (domanda '+(data.currentIndex+1)+')');
           render();
         }
 
         if(data.type === 'answer-ack'){
           myAnswer = data.answer;
+          log('Risposta confermata: '+OPT_LABELS[data.answer]);
           render();
         }
 
         if(data.type === 'reset'){
+          log('Quiz resettato dall\'host');
           joined = false;
           myAnswer = null;
           prevQuestionIndex = -1;
           gameState = { questions:[], phase:'lobby', currentIndex:0, scores:{}, teams:{} };
-          if(peer){ peer.destroy(); peer=null; }
+          if(peer){ try{peer.destroy();}catch(e){} peer=null; }
           conn = null;
+          connState = 'idle';
+          roomCode = '';
+          updateConnStatus();
           render();
         }
       });
 
       conn.on('close', () => {
+        log('Connessione chiusa');
+        connState = 'closed';
+        updateConnStatus();
         renderDisconnected();
       });
 
-      conn.on('error', () => {
-        renderError('Errore di connessione');
+      conn.on('error', (err) => {
+        log('Errore connessione: '+err);
+        connState = 'error';
+        updateConnStatus();
       });
+
+      // Timeout: if data connection doesn't open in 10s
+      setTimeout(() => {
+        if(conn && !conn.open && connState === 'connecting'){
+          log('Timeout connessione dati (10s)');
+          connState = 'error';
+          renderError('Timeout. La stanza potrebbe non essere attiva.');
+        }
+      }, 10000);
     });
 
     peer.on('error', (err) => {
+      log('Errore PeerJS: '+err.type+' - '+err.message);
+      connState = 'error';
+      updateConnStatus();
       if(err.type === 'peer-unavailable'){
-        renderError('Stanza non trovata. Controlla il codice.');
+        renderError('Stanza "'+code+'" non trovata. Controlla il codice e assicurati che l\'host sia online.');
+      } else if(err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error'){
+        renderError('Errore di rete. Verifica la connessione internet e riprova.');
       } else {
-        renderError('Impossibile connettersi. Riprova.');
+        renderError('Errore: '+err.type+'. '+err.message);
       }
     });
+
+    peer.on('disconnected', () => {
+      log('Peer disconnesso dal server segnalazione');
+      if(connState === 'open'){
+        // try reconnecting
+        try{ peer.reconnect(); }catch(e){
+          log('Riconnessione fallita');
+        }
+      }
+    });
+
+    // Overall timeout for peer creation
+    setTimeout(() => {
+      if(connState === 'connecting'){
+        log('Timeout generale PeerJS (20s)');
+        connState = 'error';
+        renderError('Impossibile raggiungere il server. Il server PeerJS potrebbe essere temporaneamente non disponibile. Riprova tra qualche minuto.');
+      }
+    }, 20000);
   }
 
   // ── Render ──
   function render(){
-    if(!conn || !conn.open){
+    updateConnStatus();
+    if(connState === 'error' || connState === 'closed') return;
+    if(connState !== 'open'){
       if(!roomCode) renderJoinCode();
       else renderConnecting();
       return;
@@ -252,7 +368,7 @@ input:focus{border-color:var(--accent)}
         <div style="font-size:2.5rem;margin-bottom:8px">&#128270;</div>
         <h2 style="margin-bottom:12px">Inserisci il codice stanza</h2>
         <p style="color:var(--fg-dim);margin-bottom:16px;font-size:.9rem">Chiedi all'host il codice o scansiona il QR.</p>
-        <input type="text" id="room-input" placeholder="Es. ALDO-XY7K" style="text-align:center;text-transform:uppercase;font-size:1.2rem;font-weight:700;letter-spacing:.1em;margin-bottom:14px" maxlength="10">
+        <input type="text" id="room-input" placeholder="Es. ALDOXY7K" style="text-align:center;text-transform:uppercase;font-size:1.2rem;font-weight:700;letter-spacing:.1em;margin-bottom:14px" maxlength="10">
         <button class="btn btn-primary" style="width:100%" onclick="manualJoin()">Connetti</button>
       </div>`;
     setTimeout(()=>{
@@ -270,6 +386,7 @@ input:focus{border-color:var(--accent)}
         <div class="emoji pulse">&#128268;</div>
         <h2>Connessione in corso...</h2>
         <p>Stanza: <strong>${esc(roomCode)}</strong></p>
+        <p style="font-size:.8rem;margin-top:12px;color:var(--fg-dim)">Potrebbe richiedere qualche secondo...</p>
       </div>`;
   }
 
@@ -285,8 +402,9 @@ input:focus{border-color:var(--accent)}
   function renderError(msg){
     main.innerHTML=`
       <div class="error-card fade-in">
-        <h3>&#9888;&#65039; ${esc(msg)}</h3>
-        <button class="btn btn-primary" style="margin-top:14px" onclick="location.reload()">Riprova</button>
+        <h3>&#9888;&#65039; Oops!</h3>
+        <p style="margin-bottom:14px;color:var(--fg)">${esc(msg)}</p>
+        <button class="btn btn-primary" onclick="location.reload()">Riprova</button>
       </div>`;
   }
 
@@ -407,7 +525,7 @@ input:focus{border-color:var(--accent)}
         <div style="font-size:3rem;margin-bottom:8px">&#127942;</div>
         <h2 style="font-size:1.7rem;margin-bottom:6px">Quiz Terminato!</h2>
         ${lb.length>0?`<p style="color:var(--accent);font-size:1.2rem;font-weight:700">${esc(lb[0].name)} vince!</p>`:''}
-        <p style="color:var(--fg-dim);margin-top:8px">Il tuo punteggio: <strong>${myScore}</strong> — Posizione: <strong>${myRank}°</strong></p>
+        <p style="color:var(--fg-dim);margin-top:8px">Il tuo punteggio: <strong>${myScore}</strong> &mdash; Posizione: <strong>${myRank}&deg;</strong></p>
       </div>
       <div class="card">
         <div class="card-header">Classifica Finale</div>
@@ -426,6 +544,7 @@ input:focus{border-color:var(--accent)}
   window.manualJoin = function(){
     const code = document.getElementById('room-input')?.value?.trim()?.toUpperCase();
     if(!code) return;
+    log('Join manuale: '+code);
     connectToRoom(code);
   };
 
@@ -434,20 +553,31 @@ input:focus{border-color:var(--accent)}
     if(!name) return;
     playerName = name;
     joined = true;
-    conn.send({ type: 'join', name: playerName });
+    log('Entrato come: '+name);
+    try{
+      conn.send({ type: 'join', name: playerName });
+    }catch(e){
+      log('Errore invio join: '+e.message);
+    }
     render();
   };
 
   window.submitAnswer = function(idx){
     if(myAnswer !== null) return;
     myAnswer = idx;
-    conn.send({ type: 'answer', answer: idx });
+    log('Risposta: '+OPT_LABELS[idx]);
+    try{
+      conn.send({ type: 'answer', answer: idx });
+    }catch(e){
+      log('Errore invio risposta: '+e.message);
+    }
     render();
   };
 
   // ── Init ──
   roomCode = getRoomFromUrl();
   if(roomCode){
+    log('Codice stanza da URL: '+roomCode);
     connectToRoom(roomCode);
   } else {
     render();
