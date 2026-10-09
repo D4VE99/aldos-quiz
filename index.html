@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ALDO's</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box;margin:0}
+:root{
+  --bg:#fdf6ec;--surface:#fff;--surface-2:#f5ead6;
+  --fg:#3a2e1f;--fg-dim:#9c8b72;
+  --accent:#e86c3a;--accent-soft:rgba(232,108,58,.12);
+  --coral:#e05252;--coral-soft:rgba(224,82,82,.12);
+  --green:#3bb06a;--green-soft:rgba(59,176,106,.12);
+  --gold:#d4a017;--gold-soft:rgba(212,160,23,.12);
+  --opt-a:#e05252;--opt-b:#4a90d9;--opt-c:#e8a435;--opt-d:#7c6bc4;
+  --radius:18px;--radius-sm:12px;
+  --shadow:0 2px 12px rgba(58,46,31,.06);
+  color-scheme:light;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1f1a14;--surface:#2c2419;--surface-2:#3d3224;
+    --fg:#f4ead8;--fg-dim:#a89879;
+    --accent:#f0854e;--accent-soft:rgba(240,133,78,.15);
+    --coral:#f06b6b;--coral-soft:rgba(240,107,107,.15);
+    --green:#56c884;--green-soft:rgba(86,200,132,.15);
+    --gold:#eab835;--gold-soft:rgba(234,184,53,.15);
+    --opt-a:#f06b6b;--opt-b:#5da0e8;--opt-c:#f0b54a;--opt-d:#9485d6;
+    --shadow:0 2px 12px rgba(0,0,0,.2);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1f1a14;--surface:#2c2419;--surface-2:#3d3224;
+  --fg:#f4ead8;--fg-dim:#a89879;
+  --accent:#f0854e;--accent-soft:rgba(240,133,78,.15);
+  --coral:#f06b6b;--coral-soft:rgba(240,107,107,.15);
+  --green:#56c884;--green-soft:rgba(86,200,132,.15);
+  --gold:#eab835;--gold-soft:rgba(234,184,53,.15);
+  --opt-a:#f06b6b;--opt-b:#5da0e8;--opt-c:#f0b54a;--opt-d:#9485d6;
+  --shadow:0 2px 12px rgba(0,0,0,.2);
+  color-scheme:dark;
+}
+html{height:100%}
+body{
+  background:var(--bg);color:var(--fg);
+  font-family:'Nunito',sans-serif;
+  min-height:100%;display:flex;flex-direction:column;align-items:center;
+  padding:24px 16px;
+}
+h1,h2,h3{font-family:'Baloo 2',cursive}
+.app{width:100%;max-width:600px;display:flex;flex-direction:column;gap:18px}
+.logo{font-family:'Baloo 2',cursive;font-weight:800;font-size:2.6rem;text-align:center;color:var(--accent);line-height:1.1}
+.logo-sub{font-size:.8rem;color:var(--fg-dim);text-align:center;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:-2px}
+.card{background:var(--surface);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.card-header{font-family:'Baloo 2',cursive;font-weight:700;font-size:1.15rem;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:var(--accent-soft);color:var(--accent)}
+input{
+  width:100%;padding:11px 14px;border-radius:var(--radius-sm);
+  border:2px solid var(--surface-2);background:var(--bg);color:var(--fg);
+  font-family:inherit;font-size:.95rem;outline:none;transition:border-color .15s;
+}
+input:focus{border-color:var(--accent)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:11px 24px;border-radius:var(--radius-sm);border:none;
+  font-family:'Baloo 2',cursive;font-weight:700;font-size:.95rem;
+  cursor:pointer;transition:transform .1s,opacity .15s;color:#fff;
+}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--accent)}
+.btn-green{background:var(--green)}
+.btn:disabled{opacity:.4;cursor:default}
+.question-display{text-align:center;padding:28px 20px}
+.q-counter{font-family:'Baloo 2',cursive;font-weight:700;font-size:.9rem;color:var(--accent);margin-bottom:6px}
+.q-main-text{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.8rem;line-height:1.3;text-wrap:balance}
+@media(max-width:500px){.q-main-text{font-size:1.3rem}}
+.answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+@media(max-width:500px){.answer-grid{grid-template-columns:1fr}}
+.answer-btn{
+  padding:18px;border-radius:var(--radius);border:3px solid transparent;
+  font-family:'Baloo 2',cursive;font-weight:700;font-size:1.1rem;
+  color:#fff;text-align:left;display:flex;align-items:center;gap:10px;
+  cursor:pointer;transition:transform .1s,border-color .2s;position:relative;
+}
+.answer-btn:active{transform:scale(.96)}
+.answer-btn .lbl{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.answer-btn:nth-child(1){background:var(--opt-a)}
+.answer-btn:nth-child(2){background:var(--opt-b)}
+.answer-btn:nth-child(3){background:var(--opt-c)}
+.answer-btn:nth-child(4){background:var(--opt-d)}
+.answer-btn.selected{border-color:#fff;box-shadow:0 0 16px rgba(255,255,255,.3)}
+.answer-btn.correct-reveal{border-color:var(--green);box-shadow:0 0 20px rgba(59,176,106,.3)}
+.answer-btn.wrong-reveal{opacity:.35}
+.answer-btn.my-wrong{border-color:var(--coral);opacity:.7}
+.answer-btn.disabled{pointer-events:none;opacity:.7}
+.correct-banner{text-align:center;padding:14px;border-radius:var(--radius);background:var(--green-soft);color:var(--green);font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem}
+.wrong-banner{text-align:center;padding:14px;border-radius:var(--radius);background:var(--coral-soft);color:var(--coral);font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem}
+.lb-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.lb-row:nth-child(1){background:var(--gold-soft)}
+.lb-rank{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.15rem;min-width:34px;text-align:center}
+.lb-row:nth-child(1) .lb-rank{color:var(--gold)}
+.lb-row:nth-child(2) .lb-rank{color:var(--fg-dim)}
+.lb-row:nth-child(3) .lb-rank{color:var(--coral)}
+.lb-name{flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-name.me{color:var(--accent)}
+.lb-score{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.15rem;color:var(--accent);font-variant-numeric:tabular-nums}
+.lb-list{display:flex;flex-direction:column;gap:8px}
+.waiting-box{text-align:center;padding:40px 20px}
+.waiting-box .emoji{font-size:3rem;margin-bottom:12px}
+.waiting-box h2{margin-bottom:8px}
+.waiting-box p{color:var(--fg-dim)}
+.status-msg{text-align:center;padding:24px;color:var(--fg-dim);font-weight:700}
+.fade-in{animation:fadeIn .4s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.pulse{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.error-card{background:var(--coral-soft);border:2px solid var(--coral);border-radius:var(--radius);padding:22px;text-align:center}
+.error-card h3{color:var(--coral);font-family:'Baloo 2',cursive;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div>
+    <div class="logo">ALDO's</div>
+    <div class="logo-sub">quiz time</div>
+  </div>
+  <div id="main"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>
+(function(){
+  const OPT_LABELS = ['A','B','C','D'];
+  const main = document.getElementById('main');
+
+  let peer = null;
+  let conn = null;
+  let roomCode = '';
+  let playerName = '';
+  let joined = false;
+  let myAnswer = null;
+  let prevQuestionIndex = -1;
+
+  let gameState = {
+    questions: [],
+    phase: 'lobby',
+    currentIndex: 0,
+    scores: {},
+    teams: {}
+  };
+
+  function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+  const rankIcon = i => i===0?'&#127942;':i===1?'&#129352;':i===2?'&#129353;':(i+1);
+
+  function getRoomFromUrl(){
+    const params = new URLSearchParams(window.location.search);
+    return params.get('room') || '';
+  }
+
+  // ── Connect to admin ──
+  function connectToRoom(code){
+    roomCode = code;
+    peer = new Peer(undefined, { debug: 0 });
+
+    peer.on('open', () => {
+      conn = peer.connect(roomCode, { reliable: true });
+
+      conn.on('open', () => {
+        render();
+      });
+
+      conn.on('data', (data) => {
+        if(!data) return;
+
+        if(data.type === 'state'){
+          // Track question changes to reset answer
+          if(data.currentIndex !== prevQuestionIndex){
+            myAnswer = null;
+            prevQuestionIndex = data.currentIndex;
+          }
+          gameState = {
+            questions: data.questions || [],
+            phase: data.phase || 'lobby',
+            currentIndex: data.currentIndex || 0,
+            scores: data.scores || {},
+            teams: data.teams || {}
+          };
+          render();
+        }
+
+        if(data.type === 'answer-ack'){
+          myAnswer = data.answer;
+          render();
+        }
+
+        if(data.type === 'reset'){
+          joined = false;
+          myAnswer = null;
+          prevQuestionIndex = -1;
+          gameState = { questions:[], phase:'lobby', currentIndex:0, scores:{}, teams:{} };
+          if(peer){ peer.destroy(); peer=null; }
+          conn = null;
+          render();
+        }
+      });
+
+      conn.on('close', () => {
+        renderDisconnected();
+      });
+
+      conn.on('error', () => {
+        renderError('Errore di connessione');
+      });
+    });
+
+    peer.on('error', (err) => {
+      if(err.type === 'peer-unavailable'){
+        renderError('Stanza non trovata. Controlla il codice.');
+      } else {
+        renderError('Impossibile connettersi. Riprova.');
+      }
+    });
+  }
+
+  // ── Render ──
+  function render(){
+    if(!conn || !conn.open){
+      if(!roomCode) renderJoinCode();
+      else renderConnecting();
+      return;
+    }
+    if(!joined){
+      renderJoinName();
+      return;
+    }
+
+    const { phase } = gameState;
+    if(phase === 'lobby') renderWaiting();
+    else if(phase === 'question') renderQuestion();
+    else if(phase === 'revealed') renderRevealed();
+    else if(phase === 'finished') renderFinished();
+    else renderWaiting();
+  }
+
+  // ── Enter room code manually ──
+  function renderJoinCode(){
+    main.innerHTML=`
+      <div class="card fade-in" style="text-align:center;padding:30px">
+        <div style="font-size:2.5rem;margin-bottom:8px">&#128270;</div>
+        <h2 style="margin-bottom:12px">Inserisci il codice stanza</h2>
+        <p style="color:var(--fg-dim);margin-bottom:16px;font-size:.9rem">Chiedi all'host il codice o scansiona il QR.</p>
+        <input type="text" id="room-input" placeholder="Es. ALDO-XY7K" style="text-align:center;text-transform:uppercase;font-size:1.2rem;font-weight:700;letter-spacing:.1em;margin-bottom:14px" maxlength="10">
+        <button class="btn btn-primary" style="width:100%" onclick="manualJoin()">Connetti</button>
+      </div>`;
+    setTimeout(()=>{
+      const ri = document.getElementById('room-input');
+      if(ri){
+        ri.focus();
+        ri.addEventListener('keydown', e=>{ if(e.key==='Enter') manualJoin(); });
+      }
+    },30);
+  }
+
+  function renderConnecting(){
+    main.innerHTML=`
+      <div class="card waiting-box fade-in">
+        <div class="emoji pulse">&#128268;</div>
+        <h2>Connessione in corso...</h2>
+        <p>Stanza: <strong>${esc(roomCode)}</strong></p>
+      </div>`;
+  }
+
+  function renderDisconnected(){
+    main.innerHTML=`
+      <div class="error-card fade-in">
+        <h3>&#128533; Connessione persa</h3>
+        <p style="margin-bottom:14px;color:var(--fg-dim)">L'host potrebbe aver chiuso la sessione.</p>
+        <button class="btn btn-primary" onclick="location.reload()">Riprova</button>
+      </div>`;
+  }
+
+  function renderError(msg){
+    main.innerHTML=`
+      <div class="error-card fade-in">
+        <h3>&#9888;&#65039; ${esc(msg)}</h3>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="location.reload()">Riprova</button>
+      </div>`;
+  }
+
+  // ── Enter name ──
+  function renderJoinName(){
+    main.innerHTML=`
+      <div class="card fade-in" style="text-align:center;padding:30px">
+        <div style="font-size:2.5rem;margin-bottom:8px">&#127881;</div>
+        <h2 style="margin-bottom:4px">Unisciti al Quiz!</h2>
+        <p style="color:var(--fg-dim);margin-bottom:18px;font-size:.9rem">Stanza: <strong>${esc(roomCode)}</strong></p>
+        <input type="text" id="name-input" placeholder="Il tuo nome o squadra..." maxlength="30" style="text-align:center;font-size:1.1rem;margin-bottom:14px">
+        <button class="btn btn-green" style="width:100%;font-size:1.1rem;padding:14px" onclick="joinGame()">Entra!</button>
+      </div>`;
+    setTimeout(()=>{
+      const ni = document.getElementById('name-input');
+      if(ni){
+        ni.focus();
+        ni.addEventListener('keydown', e=>{ if(e.key==='Enter') joinGame(); });
+      }
+    },30);
+  }
+
+  // ── Waiting in lobby ──
+  function renderWaiting(){
+    main.innerHTML=`
+      <div class="card waiting-box fade-in">
+        <div class="emoji pulse">&#128075;</div>
+        <h2>Sei dentro!</h2>
+        <p>Aspetta che l'host avvii il quiz.</p>
+        <p style="margin-top:14px;font-weight:700;color:var(--accent)">${esc(playerName)}</p>
+      </div>`;
+  }
+
+  // ── Question ──
+  function renderQuestion(){
+    const q = gameState.questions[gameState.currentIndex];
+    if(!q) return renderWaiting();
+    const answered = myAnswer !== null;
+
+    main.innerHTML=`
+      <div class="card question-display fade-in">
+        <div class="q-counter">Domanda ${gameState.currentIndex+1} di ${gameState.questions.length}</div>
+        <div class="q-main-text">${esc(q.text)}</div>
+        <div class="answer-grid">
+          ${q.options.map((o,j)=>{
+            let cls = 'answer-btn';
+            if(answered && myAnswer===j) cls += ' selected';
+            if(answered && myAnswer!==j) cls += ' disabled';
+            return `<div class="${cls}" onclick="submitAnswer(${j})">
+              <span class="lbl">${OPT_LABELS[j]}</span>
+              <span style="flex:1;min-width:0">${esc(o)}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      ${answered?`<div class="status-msg fade-in" style="padding:14px">&#10003; Risposta inviata!</div>`:''}`;
+  }
+
+  // ── Revealed ──
+  function renderRevealed(){
+    const q = gameState.questions[gameState.currentIndex];
+    if(!q) return;
+    const correctIdx = q.correct;
+    const isCorrect = myAnswer === correctIdx;
+    const myId = peer?.id || '';
+    const myScore = gameState.scores[myId]?.score || 0;
+
+    const lb = Object.entries(gameState.scores)
+      .map(([id,s])=>({id, name:s.name, score:s.score||0}))
+      .sort((a,b)=>b.score-a.score);
+
+    main.innerHTML=`
+      <div class="card question-display fade-in">
+        <div class="q-counter">Domanda ${gameState.currentIndex+1} di ${gameState.questions.length}</div>
+        <div class="q-main-text">${esc(q.text)}</div>
+        <div class="answer-grid">
+          ${q.options.map((o,j)=>{
+            let cls='answer-btn';
+            if(j===correctIdx) cls+=' correct-reveal';
+            else if(myAnswer===j) cls+=' my-wrong';
+            else cls+=' wrong-reveal';
+            return `<div class="${cls}" style="pointer-events:none">
+              <span class="lbl">${OPT_LABELS[j]}</span>
+              <span style="flex:1;min-width:0">${esc(o)}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      ${myAnswer!==null
+        ?(isCorrect
+          ?`<div class="correct-banner fade-in">&#127881; Esatto! +1 punto</div>`
+          :`<div class="wrong-banner fade-in">&#128532; La risposta era ${OPT_LABELS[correctIdx]}</div>`)
+        :`<div class="wrong-banner fade-in">Non hai risposto in tempo!</div>`}
+      <div class="card fade-in">
+        <div class="card-header">Classifica <span class="badge">Tu: ${myScore} pt</span></div>
+        <div class="lb-list">
+          ${lb.map((e,i)=>`
+            <div class="lb-row">
+              <div class="lb-rank">${rankIcon(i)}</div>
+              <div class="lb-name ${e.id===myId?'me':''}">${esc(e.name)}${e.id===myId?' (tu)':''}</div>
+              <div class="lb-score">${e.score}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ── Finished ──
+  function renderFinished(){
+    const myId = peer?.id || '';
+    const lb = Object.entries(gameState.scores)
+      .map(([id,s])=>({id, name:s.name, score:s.score||0}))
+      .sort((a,b)=>b.score-a.score);
+    const myRank = lb.findIndex(e=>e.id===myId)+1;
+    const myScore = gameState.scores[myId]?.score||0;
+
+    main.innerHTML=`
+      <div class="card fade-in" style="text-align:center;padding:36px">
+        <div style="font-size:3rem;margin-bottom:8px">&#127942;</div>
+        <h2 style="font-size:1.7rem;margin-bottom:6px">Quiz Terminato!</h2>
+        ${lb.length>0?`<p style="color:var(--accent);font-size:1.2rem;font-weight:700">${esc(lb[0].name)} vince!</p>`:''}
+        <p style="color:var(--fg-dim);margin-top:8px">Il tuo punteggio: <strong>${myScore}</strong> — Posizione: <strong>${myRank}°</strong></p>
+      </div>
+      <div class="card">
+        <div class="card-header">Classifica Finale</div>
+        <div class="lb-list">
+          ${lb.map((e,i)=>`
+            <div class="lb-row fade-in" style="animation-delay:${i*0.06}s">
+              <div class="lb-rank">${rankIcon(i)}</div>
+              <div class="lb-name ${e.id===myId?'me':''}">${esc(e.name)}${e.id===myId?' (tu)':''}</div>
+              <div class="lb-score">${e.score}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ── Actions ──
+  window.manualJoin = function(){
+    const code = document.getElementById('room-input')?.value?.trim()?.toUpperCase();
+    if(!code) return;
+    connectToRoom(code);
+  };
+
+  window.joinGame = function(){
+    const name = document.getElementById('name-input')?.value?.trim();
+    if(!name) return;
+    playerName = name;
+    joined = true;
+    conn.send({ type: 'join', name: playerName });
+    render();
+  };
+
+  window.submitAnswer = function(idx){
+    if(myAnswer !== null) return;
+    myAnswer = idx;
+    conn.send({ type: 'answer', answer: idx });
+    render();
+  };
+
+  // ── Init ──
+  roomCode = getRoomFromUrl();
+  if(roomCode){
+    connectToRoom(roomCode);
+  } else {
+    render();
+  }
+})();
+</script>
+</body>
+</html>
