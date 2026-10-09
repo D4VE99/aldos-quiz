@@ -62,6 +62,7 @@ h1,h2,h3{font-family:'Baloo 2',cursive}
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:var(--accent-soft);color:var(--accent)}
 .badge-green{background:var(--green-soft);color:var(--green)}
 .badge-blue{background:var(--blue-soft);color:var(--blue)}
+.badge-coral{background:var(--coral-soft);color:var(--coral)}
 input,textarea{
   width:100%;padding:11px 14px;border-radius:var(--radius-sm);
   border:2px solid var(--surface-2);background:var(--bg);color:var(--fg);
@@ -136,11 +137,16 @@ input:focus,textarea:focus{border-color:var(--accent)}
 .divider{height:1px;background:var(--surface-2);margin-block:4px}
 .fade-in{animation:fadeIn .4s ease-out}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.connection-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-.connection-dot.online{background:var(--green)}
-.connection-dot.connecting{background:var(--gold);animation:blink 1s infinite}
-.connection-dot.offline{background:var(--coral)}
+.conn-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:700}
+.conn-bar .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.conn-bar.online{background:var(--green-soft);color:var(--green)}
+.conn-bar.online .dot{background:var(--green)}
+.conn-bar.connecting{background:var(--gold-soft);color:var(--gold)}
+.conn-bar.connecting .dot{background:var(--gold);animation:blink 1s infinite}
+.conn-bar.error{background:var(--coral-soft);color:var(--coral)}
+.conn-bar.error .dot{background:var(--coral)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.debug-log{font-size:.75rem;color:var(--fg-dim);background:var(--surface-2);border-radius:var(--radius-sm);padding:12px;max-height:120px;overflow-y:auto;font-family:monospace;line-height:1.6;word-break:break-all}
 </style>
 </head>
 <body>
@@ -151,6 +157,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
   </div>
   <div id="conn-status"></div>
   <div id="main"></div>
+  <div id="debug-box" style="margin-top:12px"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
@@ -161,48 +168,85 @@ input:focus,textarea:focus{border-color:var(--accent)}
   const OPT_COLORS = ['var(--opt-a)','var(--opt-b)','var(--opt-c)','var(--opt-d)'];
   const main = document.getElementById('main');
   const connEl = document.getElementById('conn-status');
+  const debugBox = document.getElementById('debug-box');
+
+  // ── Debug log ──
+  let logs = [];
+  function log(msg){
+    const t = new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    logs.push(t+' '+msg);
+    if(logs.length>30) logs.shift();
+    debugBox.innerHTML='<div class="debug-log">'+logs.join('<br>')+'</div>';
+    console.log('[ALDO admin]',msg);
+  }
 
   // ── PeerJS ──
   let peer = null;
-  let connections = {}; // { peerId: { conn, name } }
+  let connections = {};
   let roomCode = '';
+  let peerReady = false;
+  let peerError = '';
+  let retryCount = 0;
+  const MAX_RETRIES = 3;
 
   // ── Game state ──
   let questions = [];
   let phase = 'setup';
   let currentIndex = 0;
-  let teams = {};      // { peerId: name }
-  let responses = {};  // { peerId: answerIndex }
-  let scores = {};     // { peerId: { name, score } }
+  let teams = {};
+  let responses = {};
+  let scores = {};
 
   function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
   const rankIcon = i => i===0?'&#127942;':i===1?'&#129352;':i===2?'&#129353;':(i+1);
 
   function generateRoomCode(){
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = 'ALDO-';
+    let code = 'ALDO';
     for(let i=0;i<4;i++) code += chars[Math.floor(Math.random()*chars.length)];
     return code;
   }
 
   function getPlayerLink(){
-    const base = window.location.href.replace(/\/admin\.html.*/,'').replace(/\/$/,'');
+    const loc = window.location;
+    const base = loc.protocol + '//' + loc.host + loc.pathname.replace(/\/admin\.html.*/, '').replace(/\/$/,'');
     return base + '/index.html?room=' + roomCode;
+  }
+
+  // ── Connection status bar ──
+  function updateConnStatus(){
+    if(phase === 'setup'){
+      connEl.innerHTML = '';
+      return;
+    }
+    if(peerError){
+      connEl.innerHTML = `<div class="conn-bar error"><span class="dot"></span>${esc(peerError)} <button class="btn btn-sm btn-coral" style="margin-left:auto" onclick="retryPeer()">Riprova</button></div>`;
+    } else if(!peerReady){
+      connEl.innerHTML = '<div class="conn-bar connecting"><span class="dot"></span>Connessione al server...</div>';
+    } else {
+      const n = Object.values(connections).filter(c=>c.conn&&c.conn.open).length;
+      connEl.innerHTML = `<div class="conn-bar online"><span class="dot"></span>Online &mdash; Stanza: ${esc(roomCode)} &mdash; ${n} connessi</div>`;
+    }
   }
 
   // ── Broadcast to all players ──
   function broadcast(msg){
+    let sent = 0;
     Object.values(connections).forEach(c => {
-      try{ if(c.conn && c.conn.open) c.conn.send(msg); }catch(e){}
+      try{
+        if(c.conn && c.conn.open){
+          c.conn.send(msg);
+          sent++;
+        }
+      }catch(e){ log('Errore invio: '+e.message); }
     });
+    log('Broadcast a '+sent+' giocatori: '+msg.type);
   }
 
   function broadcastState(){
-    // Send full game state (without correct answers during question phase)
     const qs = questions.map(q => ({
       text: q.text,
       options: q.options,
-      // Only send correct answer after reveal
       correct: (phase === 'revealed' || phase === 'finished') ? q.correct : -1
     }));
     broadcast({
@@ -217,10 +261,13 @@ input:focus,textarea:focus{border-color:var(--accent)}
 
   // ── Handle incoming player connection ──
   function handleConnection(conn){
+    log('Nuova connessione da: '+conn.peer);
+
     conn.on('open', () => {
+      log('Connessione aperta: '+conn.peer);
       connections[conn.peer] = { conn, name: '' };
-      // Send current state
-      setTimeout(() => broadcastState(), 100);
+      updateConnStatus();
+      setTimeout(() => broadcastState(), 200);
     });
 
     conn.on('data', (data) => {
@@ -228,6 +275,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
 
       if(data.type === 'join'){
         const name = String(data.name || '').slice(0,30);
+        log('Giocatore connesso: '+name);
         connections[conn.peer] = { conn, name };
         teams[conn.peer] = name;
         if(!scores[conn.peer]) scores[conn.peer] = { name, score: 0 };
@@ -237,51 +285,120 @@ input:focus,textarea:focus{border-color:var(--accent)}
       }
 
       if(data.type === 'answer' && phase === 'question'){
-        if(responses[conn.peer] !== undefined) return; // already answered
+        if(responses[conn.peer] !== undefined) return;
         if(typeof data.answer !== 'number') return;
         responses[conn.peer] = data.answer;
-        // Acknowledge
+        const pName = teams[conn.peer]||conn.peer;
+        log(pName+' ha risposto: '+OPT_LABELS[data.answer]);
         try{ conn.send({ type: 'answer-ack', answer: data.answer }); }catch(e){}
         render();
       }
     });
 
     conn.on('close', () => {
-      // Keep in teams list, mark disconnected
+      log('Disconnesso: '+(teams[conn.peer]||conn.peer));
       if(connections[conn.peer]) connections[conn.peer].conn = null;
+      updateConnStatus();
       render();
     });
 
-    conn.on('error', () => {});
+    conn.on('error', (err) => {
+      log('Errore connessione player: '+err);
+    });
   }
 
   // ── Start PeerJS ──
   function startPeer(){
+    if(peer){
+      try{ peer.destroy(); }catch(e){}
+      peer = null;
+    }
+    peerReady = false;
+    peerError = '';
     roomCode = generateRoomCode();
-    peer = new Peer(roomCode, { debug: 0 });
+    log('Avvio PeerJS con ID: '+roomCode);
+    updateConnStatus();
+
+    try {
+      peer = new Peer(roomCode, {
+        debug: 1,
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+          ]
+        }
+      });
+    } catch(e){
+      log('Errore creazione Peer: '+e.message);
+      peerError = 'Errore PeerJS: '+e.message;
+      updateConnStatus();
+      return;
+    }
 
     peer.on('open', (id) => {
       roomCode = id;
+      peerReady = true;
+      peerError = '';
+      retryCount = 0;
+      log('PeerJS pronto! ID: '+id);
+      updateConnStatus();
       render();
     });
 
     peer.on('connection', handleConnection);
 
-    peer.on('error', (err) => {
-      if(err.type === 'unavailable-id'){
-        // Room code taken, try another
-        roomCode = generateRoomCode();
-        peer.destroy();
-        peer = new Peer(roomCode, { debug: 0 });
-        peer.on('open', () => render());
-        peer.on('connection', handleConnection);
-        peer.on('error', () => {});
+    peer.on('disconnected', () => {
+      log('PeerJS disconnesso dal server, riconnessione...');
+      peerReady = false;
+      updateConnStatus();
+      try{ peer.reconnect(); }catch(e){
+        log('Riconnessione fallita: '+e.message);
       }
     });
+
+    peer.on('error', (err) => {
+      log('Errore PeerJS: '+err.type+' - '+err.message);
+      if(err.type === 'unavailable-id'){
+        log('ID occupato, genero nuovo codice...');
+        try{ peer.destroy(); }catch(e){}
+        retryCount++;
+        if(retryCount < MAX_RETRIES){
+          setTimeout(startPeer, 500);
+        } else {
+          peerError = 'Impossibile creare la stanza dopo '+MAX_RETRIES+' tentativi.';
+          updateConnStatus();
+        }
+      } else if(err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error' || err.type === 'socket-closed'){
+        peerError = 'Errore di rete. Verifica la connessione internet.';
+        peerReady = false;
+        updateConnStatus();
+      } else {
+        peerError = 'Errore: '+err.type;
+        updateConnStatus();
+      }
+    });
+
+    // Timeout: if not connected in 15s
+    setTimeout(() => {
+      if(!peerReady && !peerError && phase !== 'setup'){
+        log('Timeout connessione PeerJS (15s)');
+        peerError = 'Timeout connessione. Il server PeerJS potrebbe essere lento.';
+        updateConnStatus();
+      }
+    }, 15000);
   }
+
+  window.retryPeer = function(){
+    peerError = '';
+    retryCount = 0;
+    startPeer();
+    render();
+  };
 
   // ── Render ──
   function render(){
+    updateConnStatus();
     if(phase==='setup') renderSetup();
     else if(phase==='lobby') renderLobby();
     else if(phase==='question' || phase==='revealed') renderGame();
@@ -338,14 +455,22 @@ input:focus,textarea:focus{border-color:var(--accent)}
     main.innerHTML=`
       <div class="card qr-box fade-in">
         <div class="card-header" style="margin-bottom:4px">Scansiona per unirti!</div>
-        <div id="qr-container"></div>
-        <div class="qr-link">${esc(playerLink)}</div>
-        <div style="margin-top:4px">
-          <span class="badge" style="font-size:.85rem">Stanza: ${esc(roomCode)}</span>
-        </div>
+        ${peerReady?`
+          <div id="qr-container"></div>
+          <div class="qr-link">${esc(playerLink)}</div>
+          <div style="margin-top:4px">
+            <span class="badge" style="font-size:.85rem;letter-spacing:.05em">Stanza: ${esc(roomCode)}</span>
+          </div>
+        `:`
+          <div style="text-align:center;padding:20px;color:var(--fg-dim)">
+            <div style="font-size:2rem;margin-bottom:8px">&#9203;</div>
+            <p>Connessione al server in corso...</p>
+            <p style="font-size:.8rem;margin-top:8px">Il QR apparira' quando la connessione e' pronta.</p>
+          </div>
+        `}
       </div>
       <div class="card">
-        <div class="card-header">Squadre connesse <span class="badge badge-green">${teamList.length}</span></div>
+        <div class="card-header">Giocatori connessi <span class="badge badge-green">${teamList.length}</span></div>
         <div class="team-list">
           ${teamList.length===0
             ?'<div style="color:var(--fg-dim);font-size:.9rem">In attesa di giocatori...</div>'
@@ -362,16 +487,23 @@ input:focus,textarea:focus{border-color:var(--accent)}
         </button>
       </div>`;
 
-    setTimeout(()=>{
-      const container = document.getElementById('qr-container');
-      if(container && container.children.length===0){
-        new QRCode(container, {
-          text: playerLink, width: 200, height: 200,
-          colorDark: '#3a2e1f', colorLight: '#ffffff',
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      }
-    },50);
+    if(peerReady){
+      setTimeout(()=>{
+        const container = document.getElementById('qr-container');
+        if(container && container.children.length===0){
+          try{
+            new QRCode(container, {
+              text: playerLink, width: 200, height: 200,
+              colorDark: '#3a2e1f', colorLight: '#ffffff',
+              correctLevel: QRCode.CorrectLevel.M
+            });
+            log('QR code generato');
+          }catch(e){
+            log('Errore QR: '+e.message);
+          }
+        }
+      },100);
+    }
   }
 
   // ── GAME ──
@@ -410,7 +542,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
         </div>
       </div>
       ${isRevealed?`
-        <div class="correct-banner fade-in">Risposta corretta: ${OPT_LABELS[q.correct]} — ${esc(q.options[q.correct])}</div>
+        <div class="correct-banner fade-in">Risposta corretta: ${OPT_LABELS[q.correct]} &mdash; ${esc(q.options[q.correct])}</div>
         ${lb.length>0?`
         <div class="card fade-in">
           <div class="card-header">Classifica</div>
@@ -485,17 +617,23 @@ input:focus,textarea:focus{border-color:var(--accent)}
     teams = {};
     responses = {};
     scores = {};
+    connections = {};
+    log('Avvio lobby...');
     startPeer();
     render();
   };
 
   window.backToSetup = function(){
     phase = 'setup';
-    if(peer){ peer.destroy(); peer=null; }
+    peerReady = false;
+    peerError = '';
+    if(peer){ try{peer.destroy();}catch(e){} peer=null; }
     connections = {};
     teams = {};
     responses = {};
     scores = {};
+    logs = [];
+    debugBox.innerHTML = '';
     render();
   };
 
@@ -503,6 +641,7 @@ input:focus,textarea:focus{border-color:var(--accent)}
     currentIndex = idx;
     phase = 'question';
     responses = {};
+    log('Domanda '+(idx+1)+' iniziata');
     broadcastState();
     render();
   };
@@ -511,7 +650,6 @@ input:focus,textarea:focus{border-color:var(--accent)}
     phase = 'revealed';
     const q = questions[currentIndex];
 
-    // Score
     Object.entries(responses).forEach(([pid, answer]) => {
       if(!scores[pid]) scores[pid] = { name: teams[pid]||'???', score: 0 };
       scores[pid].name = teams[pid] || scores[pid].name;
@@ -519,24 +657,25 @@ input:focus,textarea:focus{border-color:var(--accent)}
         scores[pid].score = (scores[pid].score||0) + 1;
       }
     });
-    // Ensure all teams in scores
     Object.entries(teams).forEach(([pid, name]) => {
       if(!scores[pid]) scores[pid] = { name, score: 0 };
     });
 
+    log('Risposta rivelata: '+OPT_LABELS[q.correct]);
     broadcastState();
     render();
   };
 
   window.finishGame = function(){
     phase = 'finished';
+    log('Quiz terminato');
     broadcastState();
     render();
   };
 
   window.resetAll = function(){
     broadcast({ type: 'reset' });
-    if(peer){ peer.destroy(); peer=null; }
+    if(peer){ try{peer.destroy();}catch(e){} peer=null; }
     questions = [];
     phase = 'setup';
     currentIndex = 0;
@@ -545,6 +684,10 @@ input:focus,textarea:focus{border-color:var(--accent)}
     responses = {};
     scores = {};
     roomCode = '';
+    peerReady = false;
+    peerError = '';
+    logs = [];
+    debugBox.innerHTML = '';
     render();
   };
 
